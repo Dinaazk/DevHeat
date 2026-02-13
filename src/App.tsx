@@ -15,6 +15,7 @@ function App() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisResult[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [userName, setUserName] = useState('Dinaa');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -122,6 +123,7 @@ function App() {
     }).format(new Date(date));
   };
 
+
   if (currentView === 'landing') {
     return <LandingPage onGetStarted={() => setCurrentView('login')} />;
   }
@@ -129,7 +131,10 @@ function App() {
   if (currentView === 'login') {
     return (
       <LoginPage
-        onLogin={() => setCurrentView('app')}
+        onLogin={(name) => {
+          setUserName(name);
+          setCurrentView('app');
+        }}
         onNavigateToSignup={() => setCurrentView('signup')}
         onBack={() => setCurrentView('landing')}
       />
@@ -139,7 +144,10 @@ function App() {
   if (currentView === 'signup') {
     return (
       <SignupPage
-        onSignup={() => setCurrentView('app')}
+        onSignup={(name) => {
+          setUserName(name);
+          setCurrentView('app');
+        }}
         onNavigateToLogin={() => setCurrentView('login')}
         onBack={() => setCurrentView('landing')}
       />
@@ -147,258 +155,155 @@ function App() {
   }
 
   return (
-    <div className="app">
-      {/* Header */}
-      <header className="header">
-        <div className="header-logo">
-          <span className="header-icon">🛡️</span>
-          <h1>VeriShield</h1>
+    <div className="app dashboard-layout">
+      {/* Top Navigation Bar */}
+      <nav className="dashboard-nav">
+        <div className="nav-brand">
+          <div className="brand-logo-circle">
+            <span className="nav-icon">🛡️</span>
+          </div>
+          <span className="brand-text">VeriShield</span>
         </div>
-        <p className="header-tagline">
-          Media Credibility Assessment & Response System
-          <br />
-          Heuristic-driven multi-signal evaluation for trustworthy media verification
-        </p>
-      </header>
 
-      {/* Main Content */}
-      <div className="main-grid">
-        {/* Left Column - Upload & Analysis */}
-        <div>
-          {/* Upload Section */}
-          <section className="upload-section">
-            <h2 style={{ marginBottom: 'var(--spacing-lg)' }}>Upload Suspicious Media</h2>
+        <div className="nav-links">
+          <a href="#" className="nav-item active">Upload</a>
+          <a href="#" className="nav-item">Recent</a>
+          <a href="#" className="nav-item">History</a>
+        </div>
 
-            {!uploadedMedia ? (
-              <div
-                className={`upload-area ${isDragOver ? 'drag-over' : ''}`}
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <div className="upload-icon">📁</div>
-                <p className="upload-text">Drop media file here or click to browse</p>
-                <p className="upload-hint">Supports images, videos, and audio files</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="file-input"
-                  accept="image/*,video/*,audio/*"
-                  onChange={handleInputChange}
-                />
-              </div>
-            ) : (
-              <div className="file-preview">
-                <div className="preview-header">
-                  <div className="preview-info">
-                    <h4>{uploadedMedia.file.name}</h4>
-                    <p>
-                      {uploadedMedia.type.toUpperCase()} •
-                      {(uploadedMedia.file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+        <div className="nav-actions">
+          <span className="nav-user-name">Welcome, {userName}</span>
+          <button className="btn-icon-only">⋮</button>
+          <div className="user-avatar-circle">{userName.charAt(0)}</div>
+        </div>
+      </nav>
+
+      <main className="dashboard-content">
+        {/* Welcome Section */}
+        <header className="welcome-header">
+          <h1>Welcome back, {userName} 👋</h1>
+          <p>Media Credibility Assessment System</p>
+        </header>
+
+        <div className="main-grid">
+          {/* Left Column: Upload Card */}
+          <div className="primary-column">
+            <section className="card upload-card-hero">
+              <div className="upload-hero-content">
+                <div className="cloud-icon-circle">
+                  <span className="cloud-icon">↑</span>
+                </div>
+
+                <h2>Upload Suspicious Media</h2>
+
+                {!uploadedMedia ? (
+                  <div className="upload-actions-container">
+                    <button
+                      className="btn-upload-primary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload Image / Video
+                    </button>
+                    <button className="btn-upload-secondary" disabled>
+                      Analyse Media
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="file-input"
+                      accept="image/*,video/*,audio/*"
+                      onChange={handleInputChange}
+                    />
                   </div>
-                  <div className="preview-actions">
-                    <button className="btn btn-secondary btn-icon" onClick={handleRemoveMedia}>
-                      🗑️
+                ) : (
+                  <div className="upload-actions-container">
+                    <div className="file-preview-hero">
+                      {uploadedMedia.type === 'image' && <img src={uploadedMedia.preview} alt="Preview" />}
+                      {uploadedMedia.type === 'video' && <video src={uploadedMedia.preview} />}
+                      {uploadedMedia.type === 'audio' && <div className="audio-icon-hero">🔊</div>}
+                      <div className="file-name-hero">{uploadedMedia.file.name}</div>
+                      <button className="btn-close-preview" onClick={handleRemoveMedia}>×</button>
+                    </div>
+
+                    <button
+                      className="btn-upload-primary"
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing}
+                    >
+                      {isAnalyzing ? 'Analyzing...' : 'Analyse Media'}
                     </button>
                   </div>
-                </div>
-
-                {uploadedMedia.type === 'image' && uploadedMedia.preview && (
-                  <img src={uploadedMedia.preview} alt="Preview" className="preview-media" />
                 )}
 
-                {uploadedMedia.type === 'video' && uploadedMedia.preview && (
-                  <video src={uploadedMedia.preview} controls className="preview-media" />
-                )}
-
-                {uploadedMedia.type === 'audio' && uploadedMedia.preview && (
-                  <audio src={uploadedMedia.preview} controls className="audio-preview" />
-                )}
-              </div>
-            )}
-
-            {uploadedMedia && !analysisResult && (
-              <div className="analyze-button-container">
-                <button
-                  className="btn btn-primary btn-analyze"
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? '🔍 Analyzing...' : '🔍 Analyze Media'}
-                </button>
-              </div>
-            )}
-          </section>
-
-          {/* Loading State */}
-          {isAnalyzing && (
-            <section className="analysis-section">
-              <div className="loading-state">
-                <div className="loading-spinner"></div>
-                <p className="loading-text">Analyzing Media Credibility</p>
-                <p className="loading-subtext">
-                  Running multi-signal heuristic evaluation...
-                </p>
-              </div>
-            </section>
-          )}
-
-          {/* Analysis Results */}
-          {analysisResult && !isAnalyzing && (
-            <section className="analysis-section">
-              <div className="results-container">
-                {/* Risk Score Card */}
-                <div className="risk-score-card">
-                  <div className="risk-score-content">
-                    <div className="risk-level-badge">
-                      <span className={`badge badge-${analysisResult.riskLevel}`}>
-                        {analysisResult.riskLevel.toUpperCase()} RISK
-                      </span>
-                    </div>
-                    <div className="score-display">{analysisResult.overallScore}</div>
-                    <div className="score-label">Credibility Score</div>
-                    <div className="risk-summary">{analysisResult.summary}</div>
-                  </div>
-                </div>
-
-                {/* Analysis Details Grid */}
-                <div className="analysis-grid">
-                  <div className="analysis-card">
-                    <div className="analysis-card-header">
-                      <div className="analysis-card-title">📊 Metadata</div>
-                      <div className="analysis-score">{analysisResult.metadata.score}</div>
-                    </div>
-                    <ul className="analysis-details">
-                      {analysisResult.metadata.details.map((detail, idx) => (
-                        <li key={idx}>{detail}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="analysis-card">
-                    <div className="analysis-card-header">
-                      <div className="analysis-card-title">👁️ Visual</div>
-                      <div className="analysis-score">{analysisResult.visual.score}</div>
-                    </div>
-                    <ul className="analysis-details">
-                      {analysisResult.visual.details.map((detail, idx) => (
-                        <li key={idx}>{detail}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="analysis-card">
-                    <div className="analysis-card-header">
-                      <div className="analysis-card-title">📈 Virality</div>
-                      <div className="analysis-score">{analysisResult.virality.score}</div>
-                    </div>
-                    <ul className="analysis-details">
-                      {analysisResult.virality.details.map((detail, idx) => (
-                        <li key={idx}>{detail}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Credibility Signals */}
-                <div className="signals-section">
-                  <h3 className="section-title">
-                    <span className="section-icon">⚡</span>
-                    Credibility Signals Detected
-                  </h3>
-                  <div className="signals-grid">
-                    {analysisResult.credibilitySignals.map((signal, idx) => (
-                      <div key={idx} className={`signal-item severity-${signal.severity}`}>
-                        <div className="signal-category">{signal.category}</div>
-                        <div className="signal-content">
-                          <div className="signal-name">{signal.signal}</div>
-                          <div className="signal-description">{signal.description}</div>
-                          <div className="signal-confidence">
-                            <div className="confidence-bar">
-                              <div
-                                className="confidence-fill"
-                                style={{ width: `${signal.confidence * 100}%` }}
-                              />
-                            </div>
-                            <span className="confidence-value">
-                              {(signal.confidence * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Recommendations */}
-                <div className="recommendations-section">
-                  <h3 className="section-title">
-                    <span className="section-icon">💡</span>
-                    Response Recommendations
-                  </h3>
-                  <div className="recommendations-grid">
-                    {analysisResult.recommendations.map((rec, idx) => (
-                      <div key={idx} className="recommendation-item">
-                        <div className="recommendation-icon">{rec.icon}</div>
-                        <div className="recommendation-content">
-                          <div className="recommendation-header">
-                            <div className="recommendation-action">{rec.action}</div>
-                            <span className={`badge priority-badge badge-${rec.priority}`}>
-                              {rec.priority}
-                            </span>
-                          </div>
-                          <div className="recommendation-description">{rec.description}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="upload-footer-text">
+                  <p>VeriShield evaluates credibility risk using <br /> multi-signal integrity analysis.</p>
                 </div>
               </div>
             </section>
-          )}
-        </div>
 
-        {/* Right Column - Scan History */}
-        <aside className="history-sidebar">
-          <div className="history-container">
-            <h3 className="history-title">
-              <span>📜</span>
-              Scan History
-            </h3>
-
-            {analysisHistory.length === 0 ? (
-              <div className="history-empty">
-                <div className="history-empty-icon">📭</div>
-                <p>No previous scans yet</p>
-              </div>
-            ) : (
-              <div className="history-list">
-                {analysisHistory.map((result) => (
-                  <div
-                    key={result.id}
-                    className="history-item"
-                    onClick={() => handleLoadHistory(result)}
-                  >
-                    <div className="history-item-header">
-                      <span className={`badge badge-${result.riskLevel}`}>
-                        {result.riskLevel}
-                      </span>
-                      <span className="history-timestamp">
-                        {formatTimestamp(result.timestamp)}
-                      </span>
-                    </div>
-                    <div className="history-summary">
-                      Score: {result.overallScore} • {result.credibilitySignals.length} signals
-                    </div>
-                  </div>
-                ))}
+            {/* Analysis Results (Conditionally Shown below upload or as overlay) */}
+            {analysisResult && !isAnalyzing && (
+              <div className="analysis-result-overlay">
+                {/* We can keep the detailed results here if needed, or simplify */}
+                <h3>Analysis Complete</h3>
+                <div className={`result-summary-badge risk-${analysisResult.riskLevel}`}>
+                  {analysisResult.riskLevel.toUpperCase()} RISK
+                </div>
               </div>
             )}
           </div>
-        </aside>
-      </div>
+
+          {/* Right Column: Widgets */}
+          <aside className="secondary-column">
+            {/* Recent Activity Card */}
+            <section className="card widget-card">
+              <h3>Recent Activity</h3>
+              <div className="activity-list">
+                <div className="activity-item">
+                  <div className="activity-icon video">▶</div>
+                  <div className="activity-info">
+                    <span className="activity-name">Video Scan</span>
+                  </div>
+                  <span className="activity-status status-high">High Risk</span>
+                </div>
+                <div className="activity-item">
+                  <div className="activity-icon url">🔗</div>
+                  <div className="activity-info">
+                    <span className="activity-name">URL Scan</span>
+                  </div>
+                  <span className="activity-status status-medium">Medium Risk</span>
+                </div>
+                <div className="activity-item">
+                  <div className="activity-icon image">🖼️</div>
+                  <div className="activity-info">
+                    <span className="activity-name">Image Scan</span>
+                  </div>
+                  <span className="activity-status status-low">Low Risk</span>
+                </div>
+              </div>
+            </section>
+
+            {/* Last Scan Result Card */}
+            <section className="card widget-card">
+              <h3>Last Scan Result</h3>
+              <div className="scan-stats-list">
+                <div className="stat-row">
+                  <span className="stat-label">Risk Score</span>
+                  <span className="stat-value">72</span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-label">Risk Level</span>
+                  <span className="stat-value text-red">High Risk</span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-label">Confidence</span>
+                  <span className="stat-value">84%</span>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </main>
     </div>
   );
 }

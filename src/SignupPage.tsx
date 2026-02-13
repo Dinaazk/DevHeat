@@ -2,20 +2,21 @@ import React, { useState } from 'react';
 import './App.css';
 
 interface SignupPageProps {
-    onSignup: () => void;
+    onSignup: (name: string) => void;
     onNavigateToLogin: () => void;
     onBack: () => void;
 }
 
 export const SignupPage: React.FC<SignupPageProps> = ({ onSignup, onNavigateToLogin, onBack }) => {
-    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate signup
-        onSignup();
+        // Simulate signup using username effectively
+        // We pass the username as the display name
+        onSignup(username);
     };
 
     return (
@@ -35,13 +36,13 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSignup, onNavigateToLo
 
                 <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="name">Full Name</label>
+                        <label htmlFor="username">Username</label>
                         <input
                             type="text"
-                            id="name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="John Doe"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="johndoe123"
                             required
                         />
                     </div>

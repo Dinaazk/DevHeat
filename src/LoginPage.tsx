@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 
 interface LoginPageProps {
-    onLogin: () => void;
+    onLogin: (name: string) => void;
     onNavigateToSignup: () => void;
     onBack: () => void;
 }
@@ -13,8 +13,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignu
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate login
-        onLogin();
+        // Simulate login: use email prefix as name
+        const nameFromEmail = email.split('@')[0];
+        // Capitalize first letter
+        const formattedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+        onLogin(formattedName);
     };
 
     return (
