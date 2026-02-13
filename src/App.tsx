@@ -2,8 +2,14 @@ import { useState, useRef, useCallback } from 'react';
 import './App.css';
 import type { UploadedMedia, AnalysisResult, MediaType } from './types';
 import { HeuristicAnalysisEngine } from './analysisEngine';
+import { LandingPage } from './LandingPage';
+import { LoginPage } from './LoginPage';
+import { SignupPage } from './SignupPage';
+
+type ViewState = 'landing' | 'login' | 'signup' | 'app';
 
 function App() {
+  const [currentView, setCurrentView] = useState<ViewState>('landing');
   const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -115,6 +121,30 @@ function App() {
       minute: '2-digit'
     }).format(new Date(date));
   };
+
+  if (currentView === 'landing') {
+    return <LandingPage onGetStarted={() => setCurrentView('login')} />;
+  }
+
+  if (currentView === 'login') {
+    return (
+      <LoginPage
+        onLogin={() => setCurrentView('app')}
+        onNavigateToSignup={() => setCurrentView('signup')}
+        onBack={() => setCurrentView('landing')}
+      />
+    );
+  }
+
+  if (currentView === 'signup') {
+    return (
+      <SignupPage
+        onSignup={() => setCurrentView('app')}
+        onNavigateToLogin={() => setCurrentView('login')}
+        onBack={() => setCurrentView('landing')}
+      />
+    );
+  }
 
   return (
     <div className="app">
